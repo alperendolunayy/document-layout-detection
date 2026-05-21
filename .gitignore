@@ -1,0 +1,44 @@
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# venv
+.venv/
+venv/
+
+# ide
+.idea/
+.vscode/
+
+# jupyter
+.ipynb_checkpoints/
+
+# data and models - use DVC
+data/
+models/
+*.pt
+*.pth
+
+# mlflow
+mlruns/
+
+# logs
+*.log
+logs/
+
+# hydra outputs
+outputs/
+multirun/
+
+# os
+.DS_Store
+
+# dvc
+.dvc/cache/
+.dvc/tmp/
+
+# ruff
+.ruff_cache/
