@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "docuvision"
+version = "0.1.0"
+description = "Document layout detection with YOLOv8"
+authors = ["Alperen Dolunay <alperen.dolunayy@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fire = "^0.5.0"
+numpy = "^1.24.0"
+pillow = "^10.0.0"
+tqdm = "^4.65.0"
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^3.0.0"
+ruff = "^0.3.0"
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I"]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
