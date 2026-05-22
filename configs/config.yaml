@@ -1,0 +1,6 @@
+defaults:
+  - data: doclaynet
+  - model: yolov8
+  - training: default
+
+project_name: docuvision

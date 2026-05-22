@@ -1,0 +1,5 @@
+name: doclaynet
+data_dir: data/doclaynet
+batch_size: 16
+num_workers: 4
+image_size: 640

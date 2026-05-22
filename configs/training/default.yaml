@@ -1,0 +1,4 @@
+max_epochs: 50
+learning_rate: 0.001
+optimizer: adamw
+patience: 10
