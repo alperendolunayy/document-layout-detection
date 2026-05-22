@@ -17,8 +17,8 @@ venv/
 .ipynb_checkpoints/
 
 # data and models - use DVC
-data/
-models/
+/data/
+/models/
 *.pt
 *.pth
 
