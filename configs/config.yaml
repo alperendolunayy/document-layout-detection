@@ -1,6 +1,7 @@
 defaults:
   - data: doclaynet
-  - model: yolov8
+  - model: detr
   - training: default
 
 project_name: docuvision
+mlflow_tracking_uri: "http://127.0.0.1:8080"

@@ -1,5 +1,6 @@
 name: doclaynet
 data_dir: data/doclaynet
-batch_size: 16
+batch_size: 4
 num_workers: 4
-image_size: 640
+image_size: 800
+subset_ratio: 0.1

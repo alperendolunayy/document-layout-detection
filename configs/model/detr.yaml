@@ -1,0 +1,4 @@
+name: facebook/detr-resnet-50
+num_classes: 11
+pretrained: true
+num_queries: 100
