@@ -1,33 +1,66 @@
-"""CLI commands for the project."""
+"""CLI entry point for docuvision."""
+
+from pathlib import Path
 
 import fire
+from hydra import compose, initialize_config_dir
 
 
-def train():
-    """Run model training."""
-    # TODO: implement training
-    print("Training will be implemented here")
+def _get_config(overrides=None):
+    """Load hydra config."""
+    config_dir = str(Path(__file__).parent.parent / "configs")
+    with initialize_config_dir(config_dir=config_dir, version_base=None):
+        cfg = compose(config_name="config", overrides=overrides or [])
+    return cfg
 
 
-def predict(image_path: str):
-    """Run prediction on an image."""
-    # TODO: implement prediction
-    print(f"Will predict on: {image_path}")
+def train(subset_ratio=None, max_epochs=None, batch_size=None):
+    """Run DETR training."""
+    overrides = []
+    if subset_ratio is not None:
+        overrides.append(f"data.subset_ratio={subset_ratio}")
+    if max_epochs is not None:
+        overrides.append(f"training.max_epochs={max_epochs}")
+    if batch_size is not None:
+        overrides.append(f"data.batch_size={batch_size}")
+
+    cfg = _get_config(overrides)
+
+    from docuvision.training.train import run_training
+
+    run_training(cfg)
 
 
 def download_data():
-    """Download the dataset."""
-    # TODO: implement data download
-    print("Will download DocLayNet dataset")
+    """Download dataset using DVC."""
+    try:
+        import dvc.api
+
+        dvc.api.pull()
+        print("Data downloaded with DVC.")
+    except ImportError:
+        print("DVC not installed. Install with: poetry add dvc")
+
+
+def predict(image_path: str):
+    """Run prediction on a document image."""
+    image_file = Path(image_path)
+    if not image_file.exists():
+        print(f"Image not found: {image_file}")
+        return
+
+    print(f"Running prediction on: {image_file}")
+    # TODO: load model and run inference
+    print("Not implemented yet.")
 
 
 def main():
-    """Main function."""
+    """Main entry point."""
     fire.Fire(
         {
             "train": train,
-            "predict": predict,
             "download": download_data,
+            "predict": predict,
         }
     )
 
