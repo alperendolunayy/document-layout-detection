@@ -18,7 +18,10 @@ venv/
 
 # data and models - use DVC
 /data/
+!/data/train_subset_ids.json
+!/data/val_subset_ids.json
 /models/
+/checkpoints/
 *.pt
 *.pth
 
