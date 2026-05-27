@@ -27,7 +27,7 @@ CLASS_NAMES = [
 class DocLayNetDataset(Dataset):
     """DocLayNet dataset that loads COCO annotations for DETR."""
 
-    def __init__(self, annotation_file, image_dir, processor, subset_ratio=1.0):
+    def __init__(self, annotation_file, image_dir, processor, subset_ratio=1.0, split_name="train"):
         self.image_dir = Path(image_dir)
         self.processor = processor
 
@@ -37,8 +37,20 @@ class DocLayNetDataset(Dataset):
         self.images = coco_data["images"]
 
         if subset_ratio < 1.0:
-            sample_size = max(1, int(len(self.images) * subset_ratio))
-            self.images = self.images[:sample_size]
+            split_file = Path(f"data/{split_name}_subset_ids.json")
+            if split_file.exists():
+                with open(split_file) as file:
+                    saved_ids = set(json.load(file))
+                self.images = [img for img in self.images if img["id"] in saved_ids]
+                print(f"Loaded {len(self.images)} images from {split_file}")
+            else:
+                sample_size = max(1, int(len(self.images) * subset_ratio))
+                self.images = self.images[:sample_size]
+                selected_ids = [img["id"] for img in self.images]
+                split_file.parent.mkdir(parents=True, exist_ok=True)
+                with open(split_file, "w") as file:
+                    json.dump(selected_ids, file)
+                print(f"Saved {len(selected_ids)} image ids to {split_file}")
 
         # build a dict so we can quickly find annotations for each image
         self.annotations = {}
@@ -147,12 +159,14 @@ class DocLayNetDataModule(pl.LightningDataModule):
                 image_dir=self.data_dir / "PNG",
                 processor=self.processor,
                 subset_ratio=self.subset_ratio,
+                split_name="train",
             )
             self.val_dataset = DocLayNetDataset(
                 annotation_file=self.data_dir / "COCO" / "val.json",
                 image_dir=self.data_dir / "PNG",
                 processor=self.processor,
                 subset_ratio=self.subset_ratio,
+                split_name="val",
             )
 
     def train_dataloader(self):
