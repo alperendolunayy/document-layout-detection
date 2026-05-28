@@ -22,6 +22,7 @@ pytorch-lightning = "^2.0.0"
 transformers = "^4.30.0"
 torchmetrics = {version = "^1.0.0", extras = ["detection"]}
 matplotlib = "^3.7.0"
+mlflow = "^2.0.0"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.0.0"
