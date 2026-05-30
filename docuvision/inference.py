@@ -1,5 +1,6 @@
 """Inference module for document layout detection."""
 
+import time
 from pathlib import Path
 
 import torch
@@ -75,6 +76,7 @@ class LayoutDetector:
         self.model.load_state_dict(cleaned, strict=False)
         self.model.to(self.device)
         self.model.eval()
+        self.last_inference_time_ms = 0
         print(f"Model loaded from {checkpoint_path} on {self.device}")
 
     def predict(self, image, threshold=0.5):
@@ -90,6 +92,8 @@ class LayoutDetector:
         if isinstance(image, (str, Path)):
             image = Image.open(image).convert("RGB")
 
+        start_time = time.time()
+
         inputs = self.processor(images=image, return_tensors="pt")
         inputs = {k: v.to(self.device) for k, v in inputs.items()}
 
@@ -100,6 +104,8 @@ class LayoutDetector:
         results = self.processor.post_process_object_detection(
             outputs, target_sizes=target_size, threshold=threshold
         )[0]
+
+        self.last_inference_time_ms = round((time.time() - start_time) * 1000, 1)
 
         detections = []
         for score, label, box in zip(

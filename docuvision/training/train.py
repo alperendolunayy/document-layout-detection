@@ -42,8 +42,20 @@ def load_metrics_history():
     path = Path(METRICS_FILE)
     if path.exists():
         with open(path) as file:
-            return json.load(file)
-    return {"train_loss": [], "val_loss": [], "val_map": []}
+            data = json.load(file)
+        # make sure new keys exist for older json files
+        if "val_map_50" not in data:
+            data["val_map_50"] = []
+        if "val_recall" not in data:
+            data["val_recall"] = []
+        return data
+    return {
+        "train_loss": [],
+        "val_loss": [],
+        "val_map": [],
+        "val_map_50": [],
+        "val_recall": [],
+    }
 
 
 def save_metrics_history(history):
@@ -84,13 +96,31 @@ def save_plots(history):
         plt.savefig(plots_dir / "validation_loss.png", dpi=150, bbox_inches="tight")
         plt.close()
 
-    if history["val_map"]:
-        map_epochs = list(range(len(history["val_map"])))
+    # plot all validation metrics together
+    has_metrics = history.get("val_map") or history.get("val_map_50")
+    if has_metrics:
         plt.figure(figsize=(10, 6))
-        plt.plot(map_epochs, history["val_map"], marker="^", color="green")
+        if history.get("val_map_50"):
+            map50_epochs = list(range(len(history["val_map_50"])))
+            plt.plot(
+                map50_epochs, history["val_map_50"], marker="^", color="green", label="mAP@0.5"
+            )
+        if history.get("val_map"):
+            map_epochs = list(range(len(history["val_map"])))
+            plt.plot(map_epochs, history["val_map"], marker="s", color="blue", label="mAP@0.5:0.95")
+        if history.get("val_recall"):
+            recall_epochs = list(range(len(history["val_recall"])))
+            plt.plot(
+                recall_epochs,
+                history["val_recall"],
+                marker="o",
+                color="red",
+                label="Recall (mAR@100)",
+            )
         plt.xlabel("Epoch")
-        plt.ylabel("mAP")
-        plt.title("Validation mAP")
+        plt.ylabel("Score")
+        plt.title("Validation Metrics")
+        plt.legend()
         plt.grid(True, alpha=0.3)
         plt.savefig(plots_dir / "metrics_summary.png", dpi=150, bbox_inches="tight")
         plt.close()
@@ -124,6 +154,18 @@ class PlotCallback(pl.Callback):
             if hasattr(val, "item"):
                 val = val.item()
             self.history["val_map"].append(round(val, 4))
+
+        if "val/mAP_50" in metrics:
+            val = metrics["val/mAP_50"]
+            if hasattr(val, "item"):
+                val = val.item()
+            self.history["val_map_50"].append(round(val, 4))
+
+        if "val/recall" in metrics:
+            val = metrics["val/recall"]
+            if hasattr(val, "item"):
+                val = val.item()
+            self.history["val_recall"].append(round(val, 4))
 
         save_metrics_history(self.history)
         save_plots(self.history)

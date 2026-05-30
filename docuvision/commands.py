@@ -65,6 +65,7 @@ def predict(image_path: str, checkpoint: str = "checkpoints/last.ckpt", threshol
 
     detector = LayoutDetector(checkpoint_path=str(ckpt_file))
     detections = detector.predict(str(image_file), threshold=threshold)
+    print(f"Inference time: {detector.last_inference_time_ms}ms")
 
     print(f"\nFound {len(detections)} elements in {image_file.name}:\n")
     for det in detections:

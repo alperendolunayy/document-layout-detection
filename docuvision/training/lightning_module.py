@@ -130,11 +130,21 @@ class DETRLightningModule(pl.LightningModule):
 
     def on_validation_epoch_end(self):
         metrics = self.val_map.compute()
+        precision = metrics["map_50"]
+        recall = metrics["mar_100"]
+
+        # compute f1 from precision and recall
+        if precision + recall > 0:
+            f1 = 2 * precision * recall / (precision + recall)
+        else:
+            f1 = torch.tensor(0.0)
+
         self.log("val/mAP", metrics["map"], prog_bar=True)
         self.log("val/mAP_50", metrics["map_50"])
         self.log("val/mAP_75", metrics["map_75"])
-        self.log("val/precision", metrics["map"])
-        self.log("val/recall", metrics["mar_100"])
+        self.log("val/precision", precision)
+        self.log("val/recall", recall)
+        self.log("val/f1", f1)
         self.val_map.reset()
 
     def configure_optimizers(self):
