@@ -1,0 +1,10 @@
+[core]
+    remote = gdrive
+['remote "gdrive"']
+    url = gdrive://1EfL7LKqSh2zqTGhKVUW9_FSVGBbOkWNV
+    gdrive_client_id = 803438993684-9nkit7r9odc84ghlknnn5eqmiplo9ts4.apps.googleusercontent.com
+    gdrive_client_secret = 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
+['remote "data_storage"']
+    url = gdrive://1EfL7LKqSh2zqTGhKVUW9_FSVGBbOkWNV/data
+    gdrive_client_id = 803438993684-9nkit7r9odc84ghlknnn5eqmiplo9ts4.apps.googleusercontent.com
+    gdrive_client_secret = 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
