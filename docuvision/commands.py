@@ -33,14 +33,22 @@ def train(subset_ratio=None, max_epochs=None, batch_size=None):
 
 
 def download_data():
-    """Download dataset using DVC."""
-    try:
-        import dvc.api
+    """Download DocLayNet dataset."""
+    import subprocess
+    from pathlib import Path
 
-        dvc.api.pull()
-        print("Data downloaded with DVC.")
-    except ImportError:
-        print("DVC not installed. Install with: poetry add dvc")
+    data_dir = Path("data/doclaynet")
+    if data_dir.exists() and any(data_dir.iterdir()):
+        print("Dataset already exists.")
+        return
+
+    print("Downloading DocLayNet dataset (~28GB)...")
+    data_dir.mkdir(parents=True, exist_ok=True)
+    url = "https://codait-cos-dax.s3.us.cloud-object-storage.appdomain.cloud/dax-doclaynet/1.0.0/DocLayNet_core.zip"
+    subprocess.run(["wget", "-q", "--show-progress", url, "-O", "doclaynet.zip"], check=True)
+    subprocess.run(["unzip", "-q", "doclaynet.zip", "-d", "data/doclaynet"], check=True)
+    Path("doclaynet.zip").unlink()
+    print("Dataset ready!")
 
 
 def predict(image_path: str, checkpoint: str = "checkpoints/last.ckpt", threshold: float = 0.5):
