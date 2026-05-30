@@ -17,11 +17,13 @@ venv/
 .ipynb_checkpoints/
 
 # data and models - use DVC
-/data/
+/data/*
 !/data/train_subset_ids.json
 !/data/val_subset_ids.json
 /models/
-/checkpoints/
+/checkpoints/*
+!/checkpoints/*.dvc
+!/checkpoints/.gitignore
 *.pt
 *.pth
 
@@ -45,3 +47,9 @@ multirun/
 
 # ruff
 .ruff_cache/
+
+# gradio cache
+.gradio/
+
+# test files
+test_image*
