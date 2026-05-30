@@ -10,15 +10,19 @@ I detect things like tables, figures, text blocks, headers in document pages. Th
 
 Caption, Footnote, Formula, List-item, Page-footer, Page-header, Picture, Section-header, Table, Text, Title
 
-### Training Results
+### Results
 
 Trained on 10% subset (~6900 images), 29 epochs on Google Colab T4:
 
-- mAP: 0.295
-- Val Loss: 0.93
-- Train Loss: 0.56
+| Metric           | Before Training | After Training    |
+| ---------------- | --------------- | ----------------- |
+| mAP@0.5          | 0.155           | **0.456**         |
+| Recall (mAR@100) | 0.173           | **0.405**         |
+| F1-score         | 0.164           | **0.429**         |
+| Val Loss         | 1.820           | **0.930**         |
+| Inference time   | -               | **~4500ms** (CPU) |
 
-Paper baseline (Deformable DETR, full dataset): 0.57 mAP
+The main metric mAP@0.5 reached 0.456 using only 10% of the dataset. The original DocLayNet paper reports 0.57 mAP with Deformable DETR trained on the full dataset. GPU inference is estimated ~100ms on T4.
 
 ## Setup
 
@@ -47,6 +51,31 @@ poetry run python -m docuvision.commands predict --image_path path/to/image.png 
 
 Saves annotated image with colored bounding boxes and a JSON file with detections.
 
+## Gradio Demo
+
+```bash
+poetry run python -m docuvision.commands demo
+```
+
+Opens a web interface at `http://127.0.0.1:8080` where you can drag and drop document images and adjust the confidence threshold.
+
+## FastAPI
+
+```bash
+poetry run python -m docuvision.commands serve
+```
+
+- `GET /health` - check if service is running
+- `POST /detect` - upload image and get JSON response with detections
+- API docs at `http://127.0.0.1:8000/docs`
+
+## Docker
+
+```bash
+docker build -t docuvision .
+docker run -p 8080:8080 docuvision
+```
+
 ## Dataset
 
 DocLayNet from IBM Research. ~80K document pages in COCO format.
@@ -59,8 +88,10 @@ Paper: https://arxiv.org/abs/2206.01062
 
 ```
 docuvision/
-├── commands.py            # CLI commands (train, predict)
+├── commands.py            # CLI commands (train, predict, demo, serve)
 ├── inference.py           # Model loading and prediction
+├── demo.py                # Gradio web interface
+├── api.py                 # FastAPI REST endpoints
 ├── data/
 │   └── dataset.py         # Dataset loader with split saving
 └── training/
