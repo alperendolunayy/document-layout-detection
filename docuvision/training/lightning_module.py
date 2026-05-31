@@ -5,6 +5,8 @@ import torch
 from torchmetrics.detection import MeanAveragePrecision
 from transformers import DetrForObjectDetection, DetrImageProcessor
 
+IMAGE_SIZE = 800
+
 
 class DETRLightningModule(pl.LightningModule):
     """Wraps DETR model for use with pytorch lightning trainer."""
@@ -82,9 +84,9 @@ class DETRLightningModule(pl.LightningModule):
         # figure out image sizes from the pixel masks
         target_sizes = []
         for mask in batch["pixel_mask"]:
-            h = mask.sum(dim=0).max()
-            w = mask.sum(dim=1).max()
-            target_sizes.append(torch.tensor([h, w]))
+            height = mask.sum(dim=0).max()
+            width = mask.sum(dim=1).max()
+            target_sizes.append(torch.tensor([height, width]))
         target_sizes = torch.stack(target_sizes).to(self.device)
 
         # post process to get actual boxes and scores
@@ -107,10 +109,10 @@ class DETRLightningModule(pl.LightningModule):
         for label in batch["labels"]:
             boxes_cxcywh = label["boxes"]
             boxes_abs = boxes_cxcywh.clone()
-            boxes_abs[:, 0] *= 800
-            boxes_abs[:, 1] *= 800
-            boxes_abs[:, 2] *= 800
-            boxes_abs[:, 3] *= 800
+            boxes_abs[:, 0] *= IMAGE_SIZE
+            boxes_abs[:, 1] *= IMAGE_SIZE
+            boxes_abs[:, 2] *= IMAGE_SIZE
+            boxes_abs[:, 3] *= IMAGE_SIZE
 
             # cxcywh to xyxy conversion
             boxes_xyxy = torch.zeros_like(boxes_abs)

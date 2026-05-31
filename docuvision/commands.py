@@ -1,6 +1,7 @@
 """CLI entry point for docuvision."""
 
 import json
+import subprocess
 from pathlib import Path
 
 import fire
@@ -17,6 +18,9 @@ def _get_config(overrides=None):
 
 def train(subset_ratio=None, max_epochs=None, batch_size=None):
     """Run DETR training."""
+    # download model checkpoint and data if needed
+    _ensure_data()
+
     overrides = []
     if subset_ratio is not None:
         overrides.append(f"data.subset_ratio={subset_ratio}")
@@ -32,11 +36,31 @@ def train(subset_ratio=None, max_epochs=None, batch_size=None):
     run_training(cfg)
 
 
-def download_data():
-    """Download DocLayNet dataset."""
-    import subprocess
-    from pathlib import Path
+def _ensure_data():
+    """Make sure dataset is available before training."""
+    data_dir = Path("data/doclaynet")
+    if not data_dir.exists() or not any(data_dir.iterdir()):
+        print("Dataset not found. Running download...")
+        download_data()
 
+
+def download_data():
+    """Download data and model using DVC, with fallback to manual download."""
+    # try DVC pull first for model checkpoint
+    try:
+        result = subprocess.run(
+            ["dvc", "pull"],
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode == 0:
+            print("Model checkpoint downloaded with DVC.")
+        else:
+            print("DVC pull failed, checkpoint may need manual download.")
+    except FileNotFoundError:
+        print("DVC not installed. Install with: poetry add dvc")
+
+    # download dataset from public source if not present
     data_dir = Path("data/doclaynet")
     if data_dir.exists() and any(data_dir.iterdir()):
         print("Dataset already exists.")
@@ -45,20 +69,17 @@ def download_data():
     print("Downloading DocLayNet dataset (~28GB)...")
     data_dir.mkdir(parents=True, exist_ok=True)
     url = "https://codait-cos-dax.s3.us.cloud-object-storage.appdomain.cloud/dax-doclaynet/1.0.0/DocLayNet_core.zip"
-    subprocess.run(["wget", "-q", "--show-progress", url, "-O", "doclaynet.zip"], check=True)
+    try:
+        subprocess.run(["wget", "-q", "--show-progress", url, "-O", "doclaynet.zip"], check=True)
+    except FileNotFoundError:
+        subprocess.run(["curl", "-L", "-o", "doclaynet.zip", url], check=True)
     subprocess.run(["unzip", "-q", "doclaynet.zip", "-d", "data/doclaynet"], check=True)
-    Path("doclaynet.zip").unlink()
+    Path("doclaynet.zip").unlink(missing_ok=True)
     print("Dataset ready!")
 
 
 def predict(image_path: str, checkpoint: str = "checkpoints/last.ckpt", threshold: float = 0.5):
-    """Run prediction on a document image.
-
-    Args:
-        image_path: path to the document image
-        checkpoint: path to model checkpoint
-        threshold: confidence threshold for detections
-    """
+    """Run prediction on a document image."""
     image_file = Path(image_path)
     if not image_file.exists():
         print(f"Image not found: {image_file}")
@@ -66,8 +87,12 @@ def predict(image_path: str, checkpoint: str = "checkpoints/last.ckpt", threshol
 
     ckpt_file = Path(checkpoint)
     if not ckpt_file.exists():
-        print(f"Checkpoint not found: {ckpt_file}")
-        return
+        print("Checkpoint not found. Trying dvc pull...")
+        try:
+            subprocess.run(["dvc", "pull"], check=True)
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            print(f"Could not download checkpoint. Place it at: {ckpt_file}")
+            return
 
     from docuvision.inference import LayoutDetector
 
@@ -90,23 +115,32 @@ def predict(image_path: str, checkpoint: str = "checkpoints/last.ckpt", threshol
 
     # save detections as json
     json_path = image_file.parent / f"{image_file.stem}_detections.json"
-    with open(json_path, "w") as f:
-        json.dump(detections, f, indent=2)
+    with open(json_path, "w") as file:
+        json.dump(detections, file, indent=2)
     print(f"Detections saved to: {json_path}")
 
 
 def demo():
     """Launch Gradio web demo."""
+    cfg = _get_config()
+
     from docuvision.demo import launch_demo
 
-    launch_demo()
+    launch_demo(
+        checkpoint=cfg.serving.checkpoint_path,
+        port=cfg.serving.demo_port,
+    )
 
 
-def serve(host: str = "0.0.0.0", port: int = 8000):
+def serve(host: str = None, port: int = None):
     """Start FastAPI server."""
+    cfg = _get_config()
+    actual_host = host or cfg.serving.host
+    actual_port = port or cfg.serving.port
+
     import uvicorn
 
-    uvicorn.run("docuvision.api:app", host=host, port=port, reload=False)
+    uvicorn.run("docuvision.api:app", host=actual_host, port=actual_port, reload=False)
 
 
 def main():

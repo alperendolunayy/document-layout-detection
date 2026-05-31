@@ -1,0 +1,5 @@
+host: "0.0.0.0"
+port: 8000
+demo_port: 8080
+checkpoint_path: "checkpoints/last.ckpt"
+default_threshold: 0.5
