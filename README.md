@@ -30,6 +30,8 @@ Trained on 10% subset (~6900 images), 29 epochs on Google Colab T4:
 
 The main metric mAP@0.5 reached 0.456 using only 10% of the dataset. The original DocLayNet paper reports 0.57 mAP with Deformable DETR trained on the full dataset. GPU inference is estimated ~100ms on T4.
 
+For baseline comparison, the DocLayNet paper reports 0.363 mAP with Faster R-CNN on the full dataset. LayoutParser with Detectron2 pretrained on PubLayNet was considered as baseline but direct comparison was not meaningful due to subset training and dataset differences.
+
 ## Dataset
 
 DocLayNet from IBM Research, published at KDD 2022. The dataset has about 80 thousand document pages with different types like financial reports, scientific papers, legal documents and manuals. Annotations are in COCO format. I use 10% subset because the full dataset is too large for free Colab.
@@ -119,6 +121,7 @@ configs/
 ├── config.yaml
 ├── data/doclaynet.yaml
 ├── model/detr.yaml
+├── serving/default.yaml
 └── training/default.yaml
 ```
 
