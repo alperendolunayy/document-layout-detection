@@ -11,6 +11,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # install poetry
 RUN pip install --no-cache-dir poetry
 
+# install cpu-only torch first to avoid downloading cuda packages
+RUN pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu
+
 # copy dependency files first for better caching
 COPY pyproject.toml poetry.lock* ./
 

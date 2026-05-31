@@ -129,6 +129,7 @@ def demo():
     launch_demo(
         checkpoint=cfg.serving.checkpoint_path,
         port=cfg.serving.demo_port,
+        host=cfg.serving.host,
     )
 
 

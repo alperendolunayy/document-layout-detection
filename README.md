@@ -63,7 +63,7 @@ poetry run dvc pull
 poetry run python -m docuvision.commands download
 ```
 
-On first run, DVC will open your browser for Google Drive OAuth. Click "Advanced" and allow access to download the checkpoint. The first prediction will also download DETR model architecture and image processor from HuggingFace (~170MB), the fine-tuned weights are loaded from the DVC checkpoint on top.
+On first run, DVC will open your browser for Google Drive OAuth. Click "Advanced" and allow access to download the checkpoint.
 
 ## Train
 
@@ -80,6 +80,8 @@ poetry run python -m docuvision.commands predict --image_path path/to/image.png
 ```
 
 Saves annotated image with colored bounding boxes and a JSON file with detections.
+
+The first prediction will also download DETR model architecture and image processor from HuggingFace (~170MB), the fine-tuned weights are loaded from the DVC checkpoint on top.
 
 ## Gradio Demo
 

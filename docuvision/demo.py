@@ -57,13 +57,14 @@ def create_demo(detector):
     return demo
 
 
-def launch_demo(checkpoint=None, share=False, port=8080):
+def launch_demo(checkpoint=None, share=False, port=8080, host="0.0.0.0"):
     """Launch the Gradio demo.
 
     Args:
         checkpoint: path to model checkpoint
         share: whether to create a public link
         port: port number for the demo server
+        host: server host address
     """
     ckpt = checkpoint or DEFAULT_CHECKPOINT
     if not Path(ckpt).exists():
@@ -75,7 +76,7 @@ def launch_demo(checkpoint=None, share=False, port=8080):
     detector = LayoutDetector(checkpoint_path=ckpt)
 
     demo = create_demo(detector)
-    demo.launch(share=share, server_name="127.0.0.1", server_port=port)
+    demo.launch(share=share, server_name=host, server_port=port)
 
 
 if __name__ == "__main__":
