@@ -3,6 +3,7 @@ defaults:
   - model: detr
   - training: default
   - serving: default
+  - _self_
 
 project_name: docuvision
 mlflow_tracking_uri: "http://127.0.0.1:8080"

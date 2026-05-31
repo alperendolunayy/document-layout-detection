@@ -56,12 +56,14 @@ poetry install
 ## Download Data and Model
 
 ```bash
-# download model checkpoint via DVC
+# download model checkpoint via DVC (opens browser for Google Drive authentication)
 poetry run dvc pull
 
 # download dataset
 poetry run python -m docuvision.commands download
 ```
+
+On first run, DVC will open your browser for Google Drive OAuth. Click "Advanced" and allow access to download the checkpoint. The first prediction will also download DETR model architecture and image processor from HuggingFace (~170MB), the fine-tuned weights are loaded from the DVC checkpoint on top.
 
 ## Train
 
@@ -100,6 +102,7 @@ poetry run python -m docuvision.commands serve
 ## Docker
 
 ```bash
+# make sure checkpoint is downloaded first (dvc pull)
 docker build -t docuvision .
 docker run -p 8080:8080 docuvision
 ```
