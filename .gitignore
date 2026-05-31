@@ -53,3 +53,4 @@ multirun/
 
 # test files
 test_image*
+"/plots/metrics_history.json"
